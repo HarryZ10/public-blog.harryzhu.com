@@ -1,0 +1,60 @@
+name: Build and Create Pull Request
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.19.0
+      
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./frontend
+      
+      - name: Generate build
+        run: npm run build
+        working-directory: ./frontend
+
+      - name: Set BRANCH_NAME
+        id: vars
+        run: echo "BRANCH_NAME=build-artifacts-$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+
+      - name: Commit & Push Artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GH_API_TOKEN }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+    
+          cp -a frontend/build/. .
+          git checkout -b ${{ env.BRANCH_NAME }}
+          git add .
+          
+          if git diff --quiet --staged; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Add build artifacts" 
+          git push origin ${{ env.BRANCH_NAME }}
+
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_API_TOKEN }}
+        run: |
+          PR_TITLE="Automated Build Artifacts Update"
+          PR_BODY="Latest build artifacts for client files"
+          gh pr create --title "$PR_TITLE" --body "$PR_BODY" --base "release/v2" --head ${{ env.BRANCH_NAME }}
