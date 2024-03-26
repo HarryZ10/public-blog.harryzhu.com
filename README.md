@@ -7,7 +7,7 @@ This project is a full-stack web application (for a Tumblr-clone project assignm
 ---
 ### Backend Structure
 
-The main directory written in PHP for the backend part of the project is not for public use.
+Not for public use. If you're a recruiter or hiring manager, please email `hello@harryzhu.com` for read-only access.
 
 ### Frontend Structure
 
