@@ -7,27 +7,7 @@ This project is a full-stack web application (for a Tumblr-clone project assignm
 ---
 ### Backend Structure
 
-#### `/backend`
-The main directory for the backend part of the project.
-
-#### `/backend/models`
-Contains the model files for the application.
-- `Comment.php`: Defines the Comment model, representing comment data in the database.
-- `Post.php`: Defines the Post model, representing blog post data in the database.
-- `User.php`: Defines the User model, representing user data in the database.
-
-#### `/backend/routes`
-Contains route definitions for the backend API.
-
-#### `/backend/services`
-Core services for the backend application.
-- `api`: Directory containing specific API-related services.
-- `AuthService.php`: Service handling authentication logic.
-- `DatabaseService.php`: Service for database connection and operations.
-- `FeedService.php`: Service for managing the feed, including posts and comments.
-
-#### `/backend/config.php`
-Configuration file for the backend, includes database settings and other configurations.
+The main directory written in PHP for the backend part of the project is not for public use.
 
 ### Frontend Structure
 
