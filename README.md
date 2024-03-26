@@ -25,26 +25,6 @@ The main directory for the frontend part of the project.
   - `index.js`: Entry point for the React application.
   - `routes.js`: Defines the routing for the frontend application.
 
-## Installation
-
-### Backend Setup
-1. Navigate to `/backend`.
-2. Install the necessary PHP dependencies (if any).
-3. Configure your database in `config.php`.
-
-### Frontend Setup
-1. Navigate to `/frontend`.
-2. Run `npm install` or `npm ci` to install the proper node modules. DO NOT delete `package.json` or `package-lock.json`.
-3. Start the frontend server with `npm start`.
-
-## Usage
-
-After setting up both the front end and back end, you can start using the application by navigating to the front end's URL. The application supports creating, viewing, and managing blog posts and user comments.
-
-## Contributing
-
-Contributions to this project are not welcome.
-
 ## Acknowledgments
 
 * CS 314: Client-Server Systems
