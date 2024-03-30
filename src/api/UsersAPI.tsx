@@ -69,18 +69,6 @@ export const login = async (username: string, password: string): Promise<LoginRe
     return response;
 };
 
-export const Logout: React.FC  = () => {
-    const navigate = useNavigate();
-    Cookies.remove('token');
-
-    // Wait for a short time before navigating
-    setTimeout(() => {
-        navigate("/");
-    }, 500);
-
-    return null;
-}
-
 // Register
 export const register = async (username: string, password: string): Promise<RegisterResponse> => {
     const response: RegisterResponse = await fetch(`${API_BASE_URL}/register`, {

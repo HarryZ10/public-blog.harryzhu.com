@@ -36,7 +36,7 @@ export const getAllPosts = async (): Promise<PostsResponse> => {
     return response
 };
 
-export const getAllPostsByUser = async (): Promise<PostsResponse> => {
+export const getAllPostsByMe = async (): Promise<PostsResponse> => {
     const response = await fetch(`${API_BASE_URL}/profile/me`, {
         method: 'GET',
         headers: {

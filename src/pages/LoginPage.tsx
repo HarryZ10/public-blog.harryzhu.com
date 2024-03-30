@@ -1,5 +1,5 @@
-import React from "react";
 import styled from "styled-components";
+import NavBar from "../components/layout/NavBar";
 import LoginPanel from '../components/login/LoginPanel';
 
 const PageTitle = styled.h1`
@@ -11,7 +11,7 @@ const PageTitle = styled.h1`
     width: max-content;
     max-width: 100%;
     margin: 0 auto;
-    margin-top: 10rem;
+    margin-top: 3rem;
     padding: '28px 0 16px';
 `;
 
@@ -19,6 +19,7 @@ const LoginPage = () => {
 
     return (
         <>
+            <NavBar />
             <PageTitle>Login.</PageTitle>
             <LoginPanel/>
         </>

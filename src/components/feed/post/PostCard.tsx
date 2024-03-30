@@ -7,6 +7,7 @@ import { toast } from 'react-hot-toast';
 
 import CreateCommentForm from "../CreateCommentForm";
 import { PostCard as PCInfo} from "../../../interfaces/postCard";
+import CommentList from "./CommentList";
 import { JSONPayload } from "../CreateCommentForm";
 import { getUsername } from "../../../api/UsersAPI";
 import { getCommentsByPostId } from "../../../api/CommentsAPI";
@@ -48,6 +49,7 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
         const fetchCommentsAndUsernames = async () => {
             await getCommentsByPostId(post_id)
             .then(async resp => {
+
                  // Create a new array to store comments with usernames
                 let commentsWithUsernames: Array<Comment> = [];
 
@@ -63,11 +65,7 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
                 setComments(commentsWithUsernames);
             })
             .catch(err => {
-                if (err?.code == "GET_COMMENTS_FAILED") {
-                    toast.error(err?.message);
-                } else {
-                    toast.error("Failed to get comments: Please check console for more details.")
-                }
+                console.error(`Failed to get comments on ${post_id}`);
             });
         }
 
@@ -85,8 +83,13 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
 
     useEffect(() => {
         const fetchUsername = async () => {
-            const resp = await getUsername(user_id);
-            setUsername(resp);
+            await getUsername(user_id)
+                .then((res) => {
+                    setUsername(res);
+                })
+                .catch((err: any) => {
+                    console.error(err?.message);
+                })
         };
 
         fetchUsername();
@@ -129,90 +132,99 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
             <Card.Body style={CardBorderStyle}>
                 <Card.Title>Job Offer Details</Card.Title>
                 <Card.Text>{post_text}</Card.Text>
-                <hr style={{ 
-                    borderColor: themes.dark.colors.cardBorder,
-                    borderTop: '0.5px solid' }} />
 
                 {jobOfferInfo && (
-                    <div style={{ paddingBottom: '20px' }}>
-                        <Row>
-                            <Col xs={6} sm={6} md={6}><strong>Base Salary:</strong></Col>
-                            <Col xs={6} sm={6} md={6}>{formatCurrency(jobOfferInfo.baseSalary)}</Col>
-                        </Row>
-                        <Row>
-                            <Col xs={6} sm={6} md={6}><strong>Sign-on Bonus:</strong></Col>
-                            <Col xs={6} sm={6} md={6}>{formatCurrency(jobOfferInfo.signOnBonus)}</Col>
-                        </Row>
-                        <Row>
-                            <Col xs={6} sm={6} md={6}><strong>Equity:</strong></Col>
-                            <Col xs={6} sm={6} md={6}>{formatCurrency(jobOfferInfo.equity)}</Col>
-                        </Row>
-                        <Row>
-                            <Col xs={6} sm={6} md={6}><strong>Unlimited PTO:</strong></Col>
-                            <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.unlimitedPTO ? 'Yes' : 'No'}</Col>
-                        </Row>
-                        <Row>
-                            <Col xs={6} sm={6} md={6}><strong>401k Available:</strong></Col>
-                            <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.has401k ? 'Yes' : 'No'}</Col>
-                        </Row>
+                    <>
+                        <hr style={{ 
+                            borderRadius: '16px',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            border: 'none',
+                            height: '10px',
+                            width: '100%',
+                            margin: '20px 0'
+                        }}
+                        />
 
-                         <a href="#!" onClick={(e) => {
-                                 e.preventDefault();
-                                 setOpenAdditionalInfo(!openAdditionalInfo);
-                             }}
-                             style={{
-                                 textDecoration: 'none',
-                                 color: 'inherit',
-                                 paddingTop: '20px',
-                                 paddingBottom: '5px',
-                                 cursor: 'pointer',
-                                 display: 'inline-block'
-                             }}
-                         >
-                             {openAdditionalInfo ? 'Hide Details' : 'Show Details'}
-                         </a>
+                        <div style={{ paddingBottom: '20px' }}>
+                            <Row>
+                                <Col xs={6} sm={6} md={6}><strong>Base Salary:</strong></Col>
+                                <Col xs={6} sm={6} md={6}>{formatCurrency(jobOfferInfo.baseSalary)}</Col>
+                            </Row>
+                            <Row>
+                                <Col xs={6} sm={6} md={6}><strong>Sign-on Bonus:</strong></Col>
+                                <Col xs={6} sm={6} md={6}>{formatCurrency(jobOfferInfo.signOnBonus)}</Col>
+                            </Row>
+                            <Row>
+                                <Col xs={6} sm={6} md={6}><strong>Equity:</strong></Col>
+                                <Col xs={6} sm={6} md={6}>{formatCurrency(jobOfferInfo.equity)}</Col>
+                            </Row>
+                            <Row>
+                                <Col xs={6} sm={6} md={6}><strong>Unlimited PTO:</strong></Col>
+                                <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.unlimitedPTO ? 'Yes' : 'No'}</Col>
+                            </Row>
+                            <Row>
+                                <Col xs={6} sm={6} md={6}><strong>401k Available:</strong></Col>
+                                <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.has401k ? 'Yes' : 'No'}</Col>
+                            </Row>
 
-                        <Collapse in={openAdditionalInfo}>
-                            <div id="job-offer-info-collapse">
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Medical Insurance:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.healthInsurance.medical ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Dental Insurance:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.healthInsurance.dental ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Vision Insurance:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.healthInsurance.vision ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Flexible Work Hours:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.flexibleWorkHours ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Remote Work Options:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.remoteWorkOptions ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Relocation Assistance:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.relocationAssistance ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Maternity/Paternity Leave:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.maternityPaternityLeave ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Gym Membership:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.gymMembership ? 'Yes' : 'No'}</Col>
-                                </Row>
-                                <Row>
-                                    <Col xs={6} sm={6} md={6}><strong>Tuition Assistance:</strong></Col>
-                                    <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.tuitionAssistance ? 'Yes' : 'No'}</Col>
-                                </Row>
-                            </div>
-                        </Collapse>
-                     </div>
+                            <a href="#!" onClick={(e) => {
+                                    e.preventDefault();
+                                    setOpenAdditionalInfo(!openAdditionalInfo);
+                                }}
+                                style={{
+                                    textDecoration: 'none',
+                                    color: 'inherit',
+                                    paddingTop: '20px',
+                                    paddingBottom: '5px',
+                                    cursor: 'pointer',
+                                    display: 'inline-block'
+                                }}
+                            >
+                                {openAdditionalInfo ? 'Hide Details' : 'Show Details'}
+                            </a>
+
+                            <Collapse in={openAdditionalInfo}>
+                                <div id="job-offer-info-collapse">
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Medical Insurance:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.healthInsurance.medical ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Dental Insurance:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.healthInsurance.dental ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Vision Insurance:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.healthInsurance.vision ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Flexible Work Hours:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.flexibleWorkHours ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Remote Work Options:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.remoteWorkOptions ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Relocation Assistance:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.relocationAssistance ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Maternity/Paternity Leave:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.maternityPaternityLeave ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Gym Membership:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.gymMembership ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                    <Row>
+                                        <Col xs={6} sm={6} md={6}><strong>Tuition Assistance:</strong></Col>
+                                        <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.tuitionAssistance ? 'Yes' : 'No'}</Col>
+                                    </Row>
+                                </div>
+                            </Collapse>
+                        </div>
+                    </>
                 )}
 
                 <Card.Footer style={CardBorderStyle}>
@@ -241,16 +253,7 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
                         <CreateCommentForm post_id={post_id} />
                     </Row>
 
-                    {comments && comments.map(co => (
-                        <Row className="align-items-center my-2">
-                            <Col xs={4} sm={4} md={3} className="text-truncate">
-                                <strong>{co.username}:</strong>
-                            </Col>
-                            <Col xs={8} sm={8} md={9} className="text-break">
-                                {co.comment_text}
-                            </Col>
-                        </Row>
-                    ))}
+                    <CommentList comments={comments}/>
 
                 </Card.Footer>
             </Card.Body>

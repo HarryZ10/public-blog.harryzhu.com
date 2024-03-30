@@ -9,7 +9,6 @@ import { CreatePostData, Post } from '../../interfaces/post';
 import { CreatePostResponse, UpdateCommentResponse } from '../../interfaces/apiResponses';
 
 import { createPost, updatePost } from '../../api/PostsAPI';
-import ActionPlus from '../layout/ActionPlus';
 import themes from '../../styles/themes';
 import "../../styles/createPost.css"
 import toast from 'react-hot-toast';
@@ -39,6 +38,8 @@ interface FormProps {
     show: boolean;
     handleClose: () => void;
 }
+
+// TODO? use auth context that was made
 
 const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handleClose }) => {
 
@@ -175,8 +176,10 @@ const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handle
                     })
                     .catch(err => {
                         if (err?.code == "CREATE_POST_FAILED") {
+                            toast.dismiss();
                             toast.error(err?.message);
                         } else {
+                            toast.dismiss();
                             toast.error("Failed to create post: Please check console for more details.")
                         }
                     });
@@ -192,8 +195,10 @@ const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handle
                     })
                     .catch(err => {
                         if (err?.code == "UPDATE_POST_FAILED") {
+                            toast.dismiss();
                             toast.error(err?.message);
                         } else {
+                            toast.dismiss();
                             toast.error("Failed to update post: Please check console for more details.")
                         }
                     });
@@ -205,13 +210,6 @@ const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handle
             }
         }
     };
-
-    const CharacterCount = styled.div`
-        color: ${formData.postContent.length > 150 ? "#c9163a" : "#777"};
-        font-size: 14px;
-        margin-top: 5px;
-        text-align: right;
-    `
 
     const modalButtonStyle = {
         fontFamily: "Cabin",
@@ -253,7 +251,11 @@ const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handle
                                         }}}
                                         rows={2}
                                     />
-                                    <CharacterCount>
+                                    <CharacterCount
+                                        style={{
+                                            color: `${formData.postContent.length > 150 ? "#c9163a" : "#777"}`
+                                        }}
+                                    >
                                         {formData.postContent.length} characters
                                     </CharacterCount>
                                 </Col>
@@ -471,6 +473,12 @@ const modalBackground = {
     borderRadius: '20px',
     width: '100%',
 }
+
+const CharacterCount = styled.div`
+    font-size: 14px;
+    margin-top: 5px;
+    text-align: right;
+`
 
 const StyledModal = styled(Modal)`
   .modal-content {

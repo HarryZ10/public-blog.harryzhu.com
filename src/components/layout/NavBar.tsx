@@ -1,60 +1,37 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import Dropdown from 'react-bootstrap/Dropdown';
-import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
-
-import { JSONPayload } from '../feed/CreateCommentForm';
-
+import { useAuth } from '../../contexts/AuthContext';
 import '../../styles/navbar.css';
 
 export const Styles = {
     button: {
-        // backgroundColor: '#5bc3eb',
         background: 'transparent',
         color: 'white',
         border: 'none',
         padding: '10px 15px',
-        // borderRadius: '45px',
         transition: 'background-color 0.3s, transform 0.3s',
         marginTop: '10px',
         display: 'block',
-        marginLeft: 'auto', // Centers the button
-        marginRight: 'auto', // Centers the button
+        marginLeft: 'auto',
+        marginRight: 'auto',
     }
 };
 
 const NavBar: React.FC = () => {
-    const [username, setUsername] = useState('');
-    const [isTokenExpired, setIsTokenExpired] = useState(false);
+    const { user, logout } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
 
     // Dropdown
     const toggleDropdown = () => setIsOpen(!isOpen);
     const menuClass = isOpen ? "dropdown-menu-enter" : "";
 
-    // Get username to display
-    useEffect(() => {
-        // Get the token from cookies
-        const token = Cookies.get('token');
-        if (token) {
-            try {
-                // Decode the token to get the username
-                const decodedToken = jwtDecode<JSONPayload>(token);
-                setUsername(decodedToken.username);
-
-                // Check if the token is expired
-                const now = new Date();
-                setIsTokenExpired(decodedToken.exp * 1000 < now.getTime());
-            } catch (error) {
-                console.error("Removing unused or improper token");
-                Cookies.remove('token');
-            }
-        }
-    }, []);
+    const handleLogout = () => {
+        logout();
+    }
 
     return (
         <>
@@ -74,10 +51,10 @@ const NavBar: React.FC = () => {
                     </Navbar.Collapse>
                     <Navbar.Collapse className="justify-content-end">
                         <Nav>
-                            {username && !isTokenExpired ? (
+                            {user ? (
                                 <Dropdown show={isOpen} onToggle={toggleDropdown}>
                                     <Dropdown.Toggle style={{...LoggedInLink, ...Styles.button}}>
-                                        {username}
+                                        {user.username}
                                     </Dropdown.Toggle>
                                     <Dropdown.Menu style={{ width: "200px" }} className={menuClass}>
                                         <Dropdown.Item>
@@ -86,7 +63,7 @@ const NavBar: React.FC = () => {
                                             </Link>
                                         </Dropdown.Item>
                                         <Dropdown.Item>
-                                            <Link style={LoggedInLink} to="/logout">
+                                            <Link style={LoggedInLink} to="#" onClick={handleLogout}>
                                                 Log Out
                                             </Link>
                                         </Dropdown.Item>

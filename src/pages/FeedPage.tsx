@@ -1,25 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from "styled-components";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
+import { useNavigate } from 'react-router-dom';
 
-import { Post, ExtraInfo } from '../interfaces/post';
 import CreatePostForm from '../components/feed/CreatePostForm';
 import NavBar from '../components/layout/NavBar';
 import PostCard from '../components/feed/post/PostCard';
-import { getAllPosts, deletePost, updatePost, getAllPostsByUser } from '../api/PostsAPI';
 import ActionPlus from '../components/layout/ActionPlus';
-import { PostsResponse } from '../interfaces/apiResponses';
+
+import { Post } from '../interfaces/post';
+import { usePosts } from '../contexts/PostsContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface FeedProps {
     isProfileMode: boolean,
 }
 
-const FeedPage: React.FC<FeedProps> = ( props ) => {
+const FeedPage: React.FC<FeedProps> = ({ isProfileMode }) => {
 
-    const isProfileMode = props.isProfileMode;
+    const { user, login, logout } = useAuth();
+    const history = useNavigate();;
 
-    const [posts, setPosts] = useState<Array<Post>>([]);
+    if (!user) {
+        history("/login");
+        toast.dismiss();
+        toast.error("Unauthenticated")
+    }
+
+    const { posts, loading, error, fetchPosts, createPost, updatePost, deletePost } = usePosts();
+
     const [postId, setPostId] = useState('');
     const [formPostData, setFormPostData] = useState<Post>({
         id: '',
@@ -51,12 +60,7 @@ const FeedPage: React.FC<FeedProps> = ( props ) => {
         }
     });
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const navigate = useNavigate();
-
     const [show, setShow] = useState(false);
-
     const handleFormClose = () => {
         setShow(false);
         setPostId('');
@@ -91,115 +95,26 @@ const FeedPage: React.FC<FeedProps> = ( props ) => {
         });
     };
 
-    const handleFormShow = () => setShow(true);
-
     useEffect(() => {
-        const fetchPosts = async () => {
-            try {
-                if (!isProfileMode) {
-                    await getAllPosts()
-                        .then((res => {
-                            if (res?.message == "Success") {
-                                const postsWithParsedExtra: Post[] = res.results.map((post) => {
-                                    const extraInfo: ExtraInfo = JSON.parse(post.extra);
-                                    return {
-                                        ...post,
-                                        extra: extraInfo,
-                                    };
-                                });
+        fetchPosts(isProfileMode);
+    }, [isProfileMode]);
 
-                                setPosts(postsWithParsedExtra);
-                                setLoading(false);
-                            } else {
-                                navigate("/login");
-                                toast.dismiss();
-				toast.error("Must log in first!");
-                            }
-                        }))
-                        .catch(err => {
-			    console.error(err);
-                            if (err?.code === "GET_POSTS_FAILED") {
-				navigate("/login");
-				toast.dismiss();
-                                toast.error(err?.message);
-                            } else {
-                                toast.error(`Failed to refresh feed`)
-                            }
-                        })
-
-                } else {
-
-                    await getAllPostsByUser()
-                        .then(res => {
-                            if (res?.message === "Success") {
-                                const postsWithParsedExtra: Post[] = res.results.map((post) => {
-                                    const extraInfo: ExtraInfo = JSON.parse(post.extra);
-                                    return {
-                                        ...post,
-                                        extra: extraInfo,
-                                    };
-                                });
-
-                                setPosts(postsWithParsedExtra);
-                                setLoading(false);
-                            } else {
-                                navigate("/login");
-				toast.dismiss();
-                                toast.error("Must log in first!");
-                            }
-                        })
-                        .catch(err => {
-                            if (err?.code == "GET_POSTS_BY_USER_FAILED") {
-                                navigate("/login");
-				toast.dismiss();
-				toast.error(err?.message);
-                            } else {
-				toast.dismiss();
-                                toast.error("Failed to retrieve profile")
-                            }
-                        });
-                }
-                
-            } catch (err) {
-                toast.dismiss();
-                toast.error(`Blog page can't load posts due to ${err}`);
-                setLoading(false);
-            }
-        };
-
-        fetchPosts();
-    }, [navigate]);
-
-    const onDeleteHandler = async (post_id: string, user_id: string) => {
-        await deletePost(post_id, user_id)
-            .then(res => {
-                if (res?.message === "Success") {
-                    setPosts(posts.filter(post => post.id !== post_id));
-                    toast.success("Post deleted successfully!");
-                }
-            })
-            .catch(err => {
-                setError(err);
-                if (err?.code == "DELETE_POST_FAILED") {
-                    toast.error(err?.message);
-                } else {
-                    toast.error("Failed to delete post: Please check console for more details.")
-                }
-            })
-    };
-
-    const onUpdateHandler = async (data: Post) => {
+    const handleUpdatePost = async (data: Post) => {
         setPostId(data.id);
         setFormPostData(data);
         setShow(!show);
     };
 
-    if (loading) {
-        return <div>Loading posts...</div>;
-    }
+    const handleDeletePost = async (postId: string, userId: string) => {
+        await deletePost(postId, userId);
+        await fetchPosts(isProfileMode);
+    };
 
-    if (error) {
-        return <div>Error: {error}</div>;
+    const handleFormShow = () => setShow(true);
+
+    if (loading) {
+        toast.dismiss();
+        toast.loading("Loading...");
     }
 
     return (
@@ -218,8 +133,8 @@ const FeedPage: React.FC<FeedProps> = ( props ) => {
                         post_date={post.post_date}
                         user_id={post.user_id}
                         additional_info={post.extra}
-                        onDelete={() => onDeleteHandler(post.id, post.user_id)}
-                        onUpdate={() => onUpdateHandler(post)}
+                        onDelete={() => handleDeletePost(post.id, post.user_id)}
+                        onUpdate={() => handleUpdatePost(post)}
                     />
                 ))
             }

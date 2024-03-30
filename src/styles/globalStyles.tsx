@@ -14,6 +14,8 @@ interface ThemeColors {
   modalBackground: string;
   modalTextInput: string;
   submission: string;
+  backgroundLight?: string;
+  loginBackground?: string;
 }
 
 export interface Theme {
