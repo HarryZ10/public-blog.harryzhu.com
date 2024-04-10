@@ -8,7 +8,8 @@ import { JSONPayload } from './CreateCommentForm';
 import { CreatePostData, Post } from '../../interfaces/post';
 import { CreatePostResponse, UpdateCommentResponse } from '../../interfaces/apiResponses';
 
-import { createPost, updatePost } from '../../api/PostsAPI';
+import { usePosts } from '../../contexts/PostsContext';
+
 import themes from '../../styles/themes';
 import "../../styles/createPost.css"
 import toast from 'react-hot-toast';
@@ -39,9 +40,9 @@ interface FormProps {
     handleClose: () => void;
 }
 
-// TODO? use auth context that was made
-
 const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handleClose }) => {
+
+    const { posts, loading, error, fetchPosts, createPost, updatePost, deletePost } = usePosts();
 
     const [postCreated, setPostCreated] = useState(false);
     const [isButtonEnabled, setIsButtonEnabled] = useState(false);
@@ -65,7 +66,6 @@ const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handle
     });
 
     const post_id = id || '';
-
     const isUpdateMode = post_id !== '';
 
     useEffect(() => {
@@ -163,45 +163,12 @@ const CreatePostForm: React.FC<FormProps> = ({ id, initialFormData, show, handle
                     }
                 };
 
-                let response: CreatePostResponse | UpdateCommentResponse;
-
                 if (!isUpdateMode) {
-                    await createPost(postData)
-                    .then(res => {
-                        if (res.message === "Post created") {
-                            setPostCreated(true);
-                            handleClose();
-                            toast.success(`${res.message} successfully! Refresh to see changes.`)
-                        }
-                    })
-                    .catch(err => {
-                        if (err?.code == "CREATE_POST_FAILED") {
-                            toast.dismiss();
-                            toast.error(err?.message);
-                        } else {
-                            toast.dismiss();
-                            toast.error("Failed to create post: Please check console for more details.")
-                        }
-                    });
-     
+                    await createPost(postData);
+                    setPostCreated(true);
                 } else {
-                    await updatePost(postData)
-                    .then(res => {
-                        if (res?.message === "Post updated") {
-                            setPostCreated(true);
-                            handleClose();
-                            toast.success("Post updated successfully");
-                        }
-                    })
-                    .catch(err => {
-                        if (err?.code == "UPDATE_POST_FAILED") {
-                            toast.dismiss();
-                            toast.error(err?.message);
-                        } else {
-                            toast.dismiss();
-                            toast.error("Failed to update post: Please check console for more details.")
-                        }
-                    });
+                    await updatePost(postData);
+                    setPostCreated(true);
                 }
 
             } catch (error) {

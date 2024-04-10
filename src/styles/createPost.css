@@ -1,5 +1,5 @@
 .hover-effect-button:hover {
-    transform: scale(1.1); /* Scale up the button */
+    transform: scale(1.04); /* Scale up the button */
     background-color: #531E76 !important;
     border-color: #531E76 !important;
 }
@@ -12,4 +12,8 @@
 .comment-textarea::placeholder {
   color: #bdb7b5 !important;
   font-size: 17px;
+}
+
+body {
+  overflow-anchor: none;
 }

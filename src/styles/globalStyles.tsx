@@ -7,6 +7,7 @@ interface ThemeColors {
   secondary: string;
   navbarBackground: string;
   skyblueHighlight: string;
+  pageTitleAlt?: string;
   postBackground: string;
   postText: string;
   danger: string;

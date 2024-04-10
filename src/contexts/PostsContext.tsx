@@ -1,17 +1,18 @@
 import React, { useContext, useState, createContext } from 'react';
 import toast from "react-hot-toast";
 import { ExtraInfo, Post } from '../interfaces/post';
-import { getAllPosts, createPost, updatePost, deletePost, getAllPostsByMe } from '../api/PostsAPI';
+import { getAllPosts, createPost, updatePost, deletePost, getAllPostsByMe, getAllPostsByUser } from '../api/PostsAPI';
 import { CreatePostResponse } from '../interfaces/apiResponses';
+import { CreatePostData } from '../interfaces/post';
 
 interface PostsContextProps {
     posts: Post[];
     loading: boolean;
     error: string | null;
-    fetchPosts: (isProfileMode: boolean) => Promise<void>;
+    fetchPosts: (isProfileMode: boolean, toUser?: string) => Promise<void>;
     createPost: (postData: Post) => Promise<void>;
     updatePost: (postData: Post) => Promise<void>;
-    deletePost: (postId: string, userId: string) => Promise<void>;
+    deletePost: (postId: string | undefined, userId: string) => Promise<void>;
 }
 
 const PostsContext = createContext<PostsContextProps | undefined>(undefined);
@@ -29,13 +30,12 @@ export const PostsProvider: React.FC<any> = ({ children }) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
  
-    const fetchPosts = async (isProfileMode: boolean) => {
+    const fetchPosts = async (isProfileMode: boolean, userId?: string) => {
         try {
-            const fetchFn = isProfileMode ? getAllPostsByMe : getAllPosts;
-            const res = await fetchFn()
+            const fetchFn = isProfileMode ? userId !== undefined ? getAllPostsByUser : getAllPostsByMe : getAllPosts;
+            console.log(fetchFn)
+            const res = await fetchFn(userId)
                 .then((resp) => {
-                    toast.dismiss();
-                    // toast.success("Successfully loaded all posts")
                     return resp;
                 });
 
@@ -62,12 +62,20 @@ export const PostsProvider: React.FC<any> = ({ children }) => {
         }
     };
 
-    const createPostSDK = async (postData: Post) => {
+    const createPostSDK = async (postData: CreatePostData) => {
         try {
             const res: CreatePostResponse = await createPost(postData);
             if (res?.message === "Success") {
                 toast.dismiss();
                 toast.success("Post created successfully");
+
+                // TODO? soft reload
+                // setPosts([...posts, {
+                //     post_text: postData.post_text,
+                //     user_id: postData.user_id,
+                //     id: postData.id,
+                    
+                // }])
             } else {
                 toast.dismiss();
                 toast.error("Failed to create post");
@@ -84,12 +92,14 @@ export const PostsProvider: React.FC<any> = ({ children }) => {
         }
     };
 
-    const updatePostSDK = async (postData: Post) => {
+    const updatePostSDK = async (postData: CreatePostData) => {
         try {
             const res = await updatePost(postData);
             if (res?.message === 'Success') {
                 toast.dismiss();
                 toast.success('Post updated successfully!');
+
+                // TODO? soft reload here
             } else {
                 toast.dismiss();
                 toast.error('Failed to update post');
@@ -106,7 +116,7 @@ export const PostsProvider: React.FC<any> = ({ children }) => {
         }
     };
 
-    const deletePostSDK = async (postId: string, userId: string) => {
+    const deletePostSDK = async (postId: string | undefined, userId: string) => {
         try {
             const res = await deletePost(postId, userId);
             if (res?.message === 'Success') {

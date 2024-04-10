@@ -65,6 +65,37 @@ export const getAllPostsByMe = async (): Promise<PostsResponse> => {
     return response;
 };
 
+
+export const getAllPostsByUser = async (userId?: string): Promise<PostsResponse> => {
+    console.log(`Calling public profile of user ${userId}`);
+    const response = await fetch(`${API_BASE_URL}/profile/${userId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Cookies.get('token')}`
+        },
+    })
+    .then(async res => {
+        if (res.ok) {
+            return res.json();
+        } else {
+            return res.json()
+            .then(err => {
+                const error = new ToastError(
+                    `${err?.message}`,
+                    'GET_POSTS_BY_USER_FAILED'
+                );
+                throw error;
+            });
+        }
+    })
+    .catch(err => {
+        throw err;
+    })
+
+    return response;
+};
+
 // Create a new post
 export const createPost = async (data: CreatePostData): Promise<CreatePostResponse> => {
 
@@ -131,7 +162,7 @@ export const updatePost = async (data: CreatePostData): Promise<UpdateCommentRes
 };
 
 // Delete an existing post
-export const deletePost = async (id: string, userId: string) => {
+export const deletePost = async (id: string | undefined, userId: string) => {
     const response = await fetch(`${API_BASE_URL}/posts/${id}`, {
         method: 'DELETE',
         headers: {

@@ -15,8 +15,9 @@ const themes: Theme = {
       cardBorder: '#424242',
       modalBackground: '#333338',
       modalTextInput: '#414147',
-      submission: '#642895',
+      submission: '#9f66e3',
       backgroundLight: '#343b3d',
+      pageTitleAlt: '#9f66e3',
     },
     fonts: {
       primary: 'Helvetica, sans-serif',

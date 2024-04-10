@@ -7,7 +7,7 @@ import NavBar from '../components/layout/NavBar';
 const PageTitle = styled.h1`
     font-weight: 800;
     font-family: 'Outfit';
-    color: ${(props) => props.theme.dark.colors.skyblueHighlight };
+    color: ${(props) => props.theme.dark.colors.skyblueHighlight};
     letter-spacing: 0.7rem;
     font-size: 82px;
     line-height: 72px;
@@ -104,7 +104,7 @@ const HomePage = () => {
                 <PageTitle>Journex</PageTitle>
                 <PageSubTitle>Career journaling made easy</PageSubTitle>
                 <HeroButton onClick={() => {
-                    navigate("/feed")
+                    navigate("/blog")
                 }}>Get Started</HeroButton>
             </HeroSection>
 

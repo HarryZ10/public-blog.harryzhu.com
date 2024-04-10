@@ -9,7 +9,34 @@ import ToastError from '../utils/ToastError';
 
 const API_BASE_URL = process.env.REACT_APP_API_ROOT ?? 'http://10.10.10.25:80';
 
-export const getUsername = async (id: string): Promise<string> => {
+export const getAllUsers = async (): Promise<any> => {
+    const response: any = await fetch(`${API_BASE_URL}/users`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Cookies.get('token')}`
+        },
+    }).then(async res => {
+        if (res.ok) {
+            return res.json();
+        } else {
+            return res.json()
+            .then(err => {
+                const error = new ToastError(
+                    `${err?.message}`,
+                    'GET_USERS_FAILED'
+                );
+                throw error;
+            });
+        }
+    }).catch(err => {
+        throw err;
+    });
+
+    return response;
+};
+
+export const getUsername = async (id?: string): Promise<string> => {
 
     const response: RetrieveUsernameResponse = await fetch(`${API_BASE_URL}/users/${id}`, {
         method: 'GET',

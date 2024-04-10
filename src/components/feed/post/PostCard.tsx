@@ -3,7 +3,7 @@ import styled from "styled-components";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { Card, Row, Col, Button, Collapse } from 'react-bootstrap';
-import { toast } from 'react-hot-toast';
+import { Link } from "react-router-dom";
 
 import CreateCommentForm from "../CreateCommentForm";
 import { PostCard as PCInfo} from "../../../interfaces/postCard";
@@ -29,8 +29,6 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
 
     // Post Card Other Info collapse/show toggle
     const [openAdditionalInfo, setOpenAdditionalInfo] = useState(false);
-
-    const [openCommentForm, setOpenCommentForm] = useState(false);
 
     // Get username info
     const [username, setUsername] = useState('');
@@ -101,11 +99,11 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
     // Handles delete and updates
     // eslint-disable-next-line
     const handleDelete = () => {
-        onDelete({ id: post_id, post_text, post_date, user_id, additional_info });
+        onDelete();
     };
 
     const handleUpdate = () => {
-        onUpdate({ id: post_id, post_text, post_date, user_id, additional_info });
+        onUpdate();
     };
 
     const formatCurrency = (value: string): string => {
@@ -121,6 +119,14 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
         }).format(numberValue);
     }; 
 
+    const handleCommentUpdates = (commentData: any) => {
+        setComments(comments.filter((comment) => comment.id !== commentData.id));
+    };
+
+    const handleNewComments = (commentData: any) => {
+        setComments([...comments, commentData]);
+    };
+
      return (
         <StyledCard
             style={PostCardStyle}
@@ -128,7 +134,19 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
             ref={IOref}
             className={`fade-in ${addInitial ? "fade-in-initial" : ""}`.trim()}
         >
-            <Card.Header style={CardBorderStyle}>Post from {username} on {post_date}</Card.Header>
+            <Card.Header style={CardBorderStyle}>Post from 
+                <Link
+                    to={`/profile/${user_id}`}
+                    className="px-1"
+                    style={{
+                        textDecoration: 'none',
+                        color: '#9f66e3',
+                    }}
+                >
+                    {username}
+                </Link>
+                 on {post_date}
+            </Card.Header>
             <Card.Body style={CardBorderStyle}>
                 <Card.Title>Job Offer Details</Card.Title>
                 <Card.Text>{post_text}</Card.Text>
@@ -250,10 +268,10 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
                         </Col>
                     </Row>
                     <Row>
-                        <CreateCommentForm post_id={post_id} />
+                        <CreateCommentForm post_id={post_id} handleNewComments={handleNewComments}/>
                     </Row>
 
-                    <CommentList comments={comments}/>
+                    <CommentList comments={comments} handleUpdates={handleCommentUpdates}/>
 
                 </Card.Footer>
             </Card.Body>

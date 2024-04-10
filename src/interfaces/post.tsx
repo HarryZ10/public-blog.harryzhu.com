@@ -30,16 +30,17 @@ export interface ExtraInfo {
 export interface CreatePostData {
   user_id: string;
   post_text: string;
+  post_date?: string;
   token?: string;
   extra: ExtraInfo;
   id?: string;
 }
 
 export interface Post {
-    id: string;
+    id?: string;
     user_id: string;
-    project_id: string;
-    post_date: string;
+    post_date?: string;
+    project_id?: string;
     post_text: string;
     extra: ExtraInfo;
 }

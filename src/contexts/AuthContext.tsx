@@ -6,8 +6,12 @@ import React, {
     useEffect
 } from 'react';
 import Cookies from 'js-cookie';
+import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import { JSONPayload } from '../components/feed/CreateCommentForm';
+import toast from 'react-hot-toast';
+import { getAllUsers } from '../api/UsersAPI';
+
 interface User {
     username: string;
     userId: string;
@@ -16,6 +20,7 @@ interface User {
 
 interface AuthContextProps {
     user: User | null;
+    appUsers: any[];
     login: (username: string, token: string) => void;
     logout: () => void;
 }
@@ -32,9 +37,28 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<any> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [appUsers, setAppUsers] = useState([]);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const getUsers = async () => {
+            await getAllUsers()
+            .then((res) => {
+                setAppUsers(res.results);
+            })
+            .catch((err: any) => {
+                console.log("Cannot use search");
+                console.error(err);
+            });
+        };
+
+        getUsers();
+
+    }, [user]);
 
     useEffect(() => {
         const token = Cookies.get("token");
+
         if (token) {
             try {
                 const decodedToken = jwtDecode<JSONPayload>(token);
@@ -64,10 +88,13 @@ export const AuthProvider: React.FC<any> = ({ children }) => {
     const logout = () => {
         setUser(null);
         Cookies.remove('token');
-    }
+        toast.dismiss();
+        toast.success("Signed out successfully")
+        navigate("/");
+    };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, appUsers }}>
             {children}
         </AuthContext.Provider>
     )

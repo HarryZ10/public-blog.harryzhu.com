@@ -37,15 +37,18 @@ const NavBar: React.FC = () => {
         <>
             <Navbar style={NavStyle} expand="lg">
                 <Container>
-                    <Navbar.Brand style={LinkStyle} href="/">Journex</Navbar.Brand>
+                    <Navbar.Brand style={LinkStyle} href="#">Journex</Navbar.Brand>
                     <Navbar.Toggle aria-controls="responsive-navbar-nav" className="custom-toggler" />
                     <Navbar.Collapse>
                         <Nav>
                             <Nav.Link as={Link} to="/" style={LinkStyle}>
                                 Home
                             </Nav.Link>
-                            <Nav.Link as={Link} to="/feed" style={LinkStyle}>
+                            <Nav.Link as={Link} to="/blog" style={LinkStyle}>
                                 Feed
+                            </Nav.Link>
+                            <Nav.Link as={Link} to="/search" style={LinkStyle}>
+                                Search
                             </Nav.Link>
                         </Nav>
                     </Navbar.Collapse>

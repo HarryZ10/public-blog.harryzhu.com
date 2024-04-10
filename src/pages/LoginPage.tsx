@@ -5,7 +5,7 @@ import LoginPanel from '../components/login/LoginPanel';
 const PageTitle = styled.h1`
     font-weight: 800;
     font-family: 'Outfit';
-    color: ${(props) => props.theme.dark.colors.skyblueHighlight};
+    color: ${(props) => props.theme.dark.colors.pageTitleAlt};
     font-size: 82px;
     line-height: 72px;
     width: max-content;

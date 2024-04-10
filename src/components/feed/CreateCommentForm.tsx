@@ -6,10 +6,11 @@ import Cookies from "js-cookie";
 import { toast } from 'react-hot-toast';
 import { addComment } from "../../api/CommentsAPI";
 import themes from "../../styles/themes";
-import { useNavigate } from 'react-router-dom';
+import { getUsername } from "../../api/UsersAPI";
 
 interface ComponentProps {
-  post_id: string;
+  post_id?: string;
+  handleNewComments: (commentData: any) => void;
 }
 
 export interface JSONPayload {
@@ -20,17 +21,15 @@ export interface JSONPayload {
 
 interface CommentData {
   user_id: string;
-  post_id: string;
+  post_id?: string;
   comment_text: string;
-  token: string | undefined;
+  username?: string;
 }
 
-const CreateCommentForm: React.FC<ComponentProps> = ({ post_id }) => {
+const CreateCommentForm: React.FC<ComponentProps> = ({ post_id, handleNewComments }) => {
 
-    const [commentCreated, setCommentCreated] = useState(false);
     const [isPostable, setIsPostable] = useState(false);
     const [formStringData, setFormStringData] = useState('');
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (formStringData.length <= 150) {
@@ -55,30 +54,30 @@ const CreateCommentForm: React.FC<ComponentProps> = ({ post_id }) => {
         return userid;
     };
 
-    const confirmPost = async (post_id: string) => {
+    const confirmPost = async (post_id?: string) => {
 
         if (isPostable) {
             try {
                 const user_id = getUserIdFromToken();
-
+                const username = await getUsername(user_id);
                 const commentData: CommentData = {
                     user_id: user_id,
-                    post_id: post_id,
+                    post_id: post_id || undefined,
                     comment_text: formStringData,
-                    token: Cookies.get('token')
+                    username: username,
                 }
 
                 if (user_id) {
-                    await addComment(post_id, commentData)
+                    await addComment(commentData, post_id)
                     .then((res) => {
                         if (res?.message) {
-                            setCommentCreated(true);
                             toast.dismiss();
-                            toast.success("Comment created. Refresh to see changes.");
+                            toast.success("Comment created. Refresh to modify or delete.");
+                            handleNewComments(commentData);
                         }
                     })
                     .catch(err => {
-                        if (err?.code == "ADD_COMMENTS_FAILED") {
+                        if (err?.code === "ADD_COMMENTS_FAILED") {
                             toast.dismiss();
                             toast.error(err?.message);
                         } else {
@@ -95,18 +94,10 @@ const CreateCommentForm: React.FC<ComponentProps> = ({ post_id }) => {
     }
 
     const modalButtonStyle: React.CSSProperties = {
-        fontFamily: "Cabin",
-        fontWeight: '400',
-        fontSize: '16px',
-        width: '100%',
-        marginTop: '70px',
-        marginLeft: '20px',
         backgroundColor: isPostable ? themes.dark.colors.submission : '#b193ca',
-        color: themes.dark.colors.postText,
         borderColor: isPostable ? themes.dark.colors.submission : '#b193ca',
-        borderRadius: '5px',
-        transition: 'transform 0.3s, background-color 0.3s, border-color 0.3s',
-        cursor: !isPostable ? 'not-allowed' : 'pointer'
+        cursor: !isPostable ? 'not-allowed' : 'pointer',
+        color: themes.dark.colors.postText,
     }
 
     const confirmPostButton: string = isPostable ? "hover-effect-button" : '';
@@ -115,7 +106,7 @@ const CreateCommentForm: React.FC<ComponentProps> = ({ post_id }) => {
         <>
             <Form>
                 <Form.Group as={Row}>
-                    <Col sm={8} style={{ padding: 0, marginTop: '20px' }}>
+                    <Col style={{ padding: 0, marginTop: '20px' }}>
                         <Form.Control
                             as="textarea"
                             name="commentContent"
@@ -133,22 +124,24 @@ const CreateCommentForm: React.FC<ComponentProps> = ({ post_id }) => {
                         />
                         <CharacterCount
                             style={{
-                                 color: `${formStringData.length > 150 ? "#c9163a" : "#777"}`
+                                color: `${formStringData.length > 150 ? "#c9163a" : "#777"}`
                             }}
                         >
                             {formStringData.length} characters
                         </CharacterCount>
                     </Col>
-                    <Col sm={3} style={{ padding: 0 }}>
-                        <StyledButton
-                            style={modalButtonStyle}
-                            className={confirmPostButton}
-                            variant="primary"
-                            onClick={() => confirmPost(post_id)}
-                        >
-                            Comment
-                        </StyledButton>
-                    </Col>
+                </Form.Group>
+                <Form.Group as={Row}>
+                    <StyledButton
+                        style={{
+                            ...modalButtonStyle,
+                        }}
+                        className={confirmPostButton}
+                        variant="primary"
+                        onClick={() => confirmPost(post_id)}
+                    >
+                        Comment
+                    </StyledButton>
                 </Form.Group>
             </Form>
         </>
@@ -156,24 +149,34 @@ const CreateCommentForm: React.FC<ComponentProps> = ({ post_id }) => {
 }
 
 const StyledButton = styled(Button)<any>`
-    @media (max-width: 768px) {
+    @media (max-width: 960px) {
         margin-top: 20px !important;
         margin-bottom: 20px !important;
         margin-left: 0 !important;
+        width: 100% !important;
     }
+
+    font-family: "Cabin";
+    font-weight: 400;
+    font-size: 16px;
+    margin: 10px 0 15px auto;
+    width: 60%;
+    border-radius: 5px;
+    transition: transform 0.3s, background-color 0.3s, border-color 0.3s
 `;
 
 const CharacterCount = styled.div`
     font-size: 14px;
     margin-top: 5px;
     text-align: right;
-`
+`;
 
 const FormInputStyle = {
     backgroundColor: themes.dark.colors.modalTextInput,
     border: '1px solid #3D3D42',
     color: themes.dark.colors.postText,
     marginBottom: '10px',
-}
+    width: '100%',
+};
 
 export default CreateCommentForm;
