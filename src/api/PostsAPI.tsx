@@ -129,7 +129,7 @@ export const createPost = async (data: CreatePostData): Promise<CreatePostRespon
 };
 
 // Update an existing post
-export const updatePost = async (data: CreatePostData): Promise<UpdateCommentResponse> => {
+export const updatePost = async (data: CreatePostData): Promise<CreatePostResponse> => {
 
     const response: UpdateCommentResponse = await fetch(`${API_BASE_URL}/posts/${data.id}`, {
         method: 'PUT',

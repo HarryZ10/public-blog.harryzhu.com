@@ -17,6 +17,8 @@ export interface RetrieveUsernameResponse {
 
 export interface CreatePostResponse {
     message: string;
+    id?: string;
+    date?: string;
 }
 
 export interface UpdateCommentResponse {

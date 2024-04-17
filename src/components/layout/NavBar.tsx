@@ -45,7 +45,7 @@ const NavBar: React.FC = () => {
                                 Home
                             </Nav.Link>
                             <Nav.Link as={Link} to="/blog" style={LinkStyle}>
-                                Feed
+                                Discover
                             </Nav.Link>
                             <Nav.Link as={Link} to="/search" style={LinkStyle}>
                                 Search

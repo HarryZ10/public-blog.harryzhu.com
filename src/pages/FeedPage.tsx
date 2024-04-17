@@ -3,6 +3,8 @@ import styled from "styled-components";
 import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { Button } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import CreatePostForm from '../components/feed/CreatePostForm';
 import NavBar from '../components/layout/NavBar';
 import PostCard from '../components/feed/post/PostCard';
@@ -134,9 +136,25 @@ const FeedPage: React.FC<FeedProps> = ({ isProfileMode }) => {
     return (
         <div>
             <NavBar />
-            <PageTitle>
-                {!isProfileMode ? "Discover" : !username ? "My Stuff" : `${username.toLocaleUpperCase()}'s Stuff`}
-            </PageTitle>
+
+            {isProfileMode && (
+                <PageTitle>
+                    {username
+                    ? `${username.toUpperCase()}'s Stuff`
+                    : "My Stuff"}
+                </PageTitle>
+            )}
+
+            { !isProfileMode && (
+                <>
+                    <div style={CreatePostStyle}>
+                        <Button className="mt-0" onClick={handleFormShow} icon={<PlusOutlined />}>
+                            Create Post
+                        </Button>
+                    </div>
+                </>
+            )}
+
             {Array.isArray(posts) && posts
                 .sort((a, b) => new Date(b?.post_date || '').getTime() - new Date(a?.post_date || '').getTime())
                 .map(post => (
@@ -177,5 +195,10 @@ export const PageTitle = styled.h1`
     margin-top: 5rem;
     padding: '28px 0 16px';
 `;
+
+const CreatePostStyle = {
+    display: 'flex',
+    justifyContent: 'center',
+};
 
 export default FeedPage;

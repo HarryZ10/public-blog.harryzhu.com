@@ -10,7 +10,7 @@ import { getUsername } from "../../api/UsersAPI";
 
 interface ComponentProps {
   post_id?: string;
-  handleNewComments: (commentData: any) => void;
+  handleNewComments: (commentData: any, id: string, date: string) => void;
 }
 
 export interface JSONPayload {
@@ -72,8 +72,8 @@ const CreateCommentForm: React.FC<ComponentProps> = ({ post_id, handleNewComment
                     .then((res) => {
                         if (res?.message) {
                             toast.dismiss();
-                            toast.success("Comment created. Refresh to modify or delete.");
-                            handleNewComments(commentData);
+                            toast.success("Comment created");
+                            handleNewComments(commentData, res.id, res.date);
                         }
                     })
                     .catch(err => {

@@ -5,6 +5,11 @@ import { jwtDecode } from "jwt-decode";
 import { Card, Row, Col, Button, Collapse } from 'react-bootstrap';
 import { Link } from "react-router-dom";
 
+import { Button as MoreActionButton, Dropdown, Space } from "antd";
+import { DownOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { InfoCircleOutlined } from "@ant-design/icons";
+import type { MenuProps } from 'antd';
+
 import CreateCommentForm from "../CreateCommentForm";
 import { PostCard as PCInfo} from "../../../interfaces/postCard";
 import CommentList from "./CommentList";
@@ -29,6 +34,7 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
 
     // Post Card Other Info collapse/show toggle
     const [openAdditionalInfo, setOpenAdditionalInfo] = useState(false);
+    const [openComments, setOpenComments] = useState(false);
 
     // Get username info
     const [username, setUsername] = useState('');
@@ -123,29 +129,88 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
         setComments(comments.filter((comment) => comment.id !== commentData.id));
     };
 
-    const handleNewComments = (commentData: any) => {
-        setComments([...comments, commentData]);
+    const handleNewComments = (commentData: any, id: string, date: string) => {
+        const newComment = { ...commentData, id};
+
+        // Soft reload
+        setComments((prevComments) => [
+            ...prevComments.filter((comment) => comment.id !== id),
+            {
+                id: id,
+                comment_date: date,
+                comment_text: commentData.comment_text,
+                post_id: commentData.post_id,
+                user_id: commentData.user_id,
+                username: commentData.username,
+            }
+        ]);
+
     };
 
-     return (
+    const handleMenuClick: MenuProps['onClick'] = (e) => {
+        if (e.key === '1') {
+            handleUpdate();
+        } else if (e.key == '2') {
+            handleDelete();
+        }
+    };
+
+    const items: MenuProps['items'] = [
+        {
+            label: 'Edit',
+            key: '1',
+            icon: <EditOutlined />,
+        },
+        {
+            label: 'Delete',
+            key: '2',
+            icon: <DeleteOutlined />,
+            danger: true,
+        }, 
+    ];
+
+    const menuProps = {
+        items,
+        onClick: handleMenuClick,
+    };
+
+    return (
         <StyledCard
             style={PostCardStyle}
             id="post-card-index"
             ref={IOref}
             className={`fade-in ${addInitial ? "fade-in-initial" : ""}`.trim()}
         >
-            <Card.Header style={CardBorderStyle}>Post from 
-                <Link
-                    to={`/profile/${user_id}`}
-                    className="px-1"
-                    style={{
-                        textDecoration: 'none',
-                        color: '#9f66e3',
-                    }}
-                >
-                    {username}
-                </Link>
-                 on {post_date}
+            <Card.Header style={CardBorderStyle}>
+                <Row>
+                    <Col xs={8} md={8} lg={9}>
+                        Post from
+                        <Link
+                            to={`/profile/${user_id}`}
+                            className="px-1"
+                            style={{
+                            textDecoration: 'none',
+                            color: '#9f66e3',
+                            }}
+                        >
+                            {username}
+                        </Link>
+                        on {post_date}
+                    </Col>
+                    <Col xs={4} md={4} lg={3}>
+                        {/* More Actions for Author */}
+                        {currentUserId === user_id && (
+                            <Dropdown menu={menuProps}>
+                            <MoreActionButtonStyled>
+                                <Space>
+                                Actions
+                                <DownOutlined />
+                                </Space>
+                            </MoreActionButtonStyled>
+                            </Dropdown>
+                        )}
+                    </Col>
+                </Row>
             </Card.Header>
             <Card.Body style={CardBorderStyle}>
                 <Card.Title>Job Offer Details</Card.Title>
@@ -202,7 +267,7 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
                             </a>
 
                             <Collapse in={openAdditionalInfo}>
-                                <div id="job-offer-info-collapse">
+                                <div>
                                     <Row>
                                         <Col xs={6} sm={6} md={6}><strong>Medical Insurance:</strong></Col>
                                         <Col xs={6} sm={6} md={6}>{jobOfferInfo.otherOptions.healthInsurance.medical ? 'Yes' : 'No'}</Col>
@@ -246,34 +311,31 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
                 )}
 
                 <Card.Footer style={CardBorderStyle}>
-                    <Row>
-                        <Col xs={6} md={9} style={{ padding: 0 }} className="d-flex justify-content-start">
 
-                            {currentUserId === user_id && (
-                                <Button
-                                    onClick={handleUpdate}
-                                    style={EditButtonStyle}
-                                >
-                                    Edit
-                                </Button>
-                            )}
-                        </Col>
+                    <MoreActionButtonStyled
+                        onClick={(e: any) => {
+                            e.preventDefault();
+                            setOpenComments(!openComments);
+                        }}
+                        icon={<InfoCircleOutlined />}
+                        className="mb-3"
+                    >
+                        {openComments ? 'Hide Comments' : 'View Comments'}
+                    </MoreActionButtonStyled>
 
-                        <Col xs={6} md={3} style={{ padding: 0 }}
-                            className="d-flex justify-content-end">
-
-                            {currentUserId === user_id && (
-                                <ActionButton style={DeleteButtonStyle} onClick={handleDelete}>Delete</ActionButton>
-                            )}
-                        </Col>
-                    </Row>
-                    <Row>
-                        <CreateCommentForm post_id={post_id} handleNewComments={handleNewComments}/>
-                    </Row>
-
-                    <CommentList comments={comments} handleUpdates={handleCommentUpdates}/>
+                    <Collapse in={openComments}>
+                        <div 
+                            style={{
+                                marginLeft: '10px',
+                            }}
+                        >
+                            <CreateCommentForm post_id={post_id} handleNewComments={handleNewComments}/>
+                            <CommentList comments={comments} handleUpdates={handleCommentUpdates}/>
+                        </div>
+                    </Collapse>
 
                 </Card.Footer>
+
             </Card.Body>
         </StyledCard>
     )
@@ -288,7 +350,7 @@ const fetchUsername = async (user_id: string): Promise<string> => {
 
 const StyledCard = styled(Card)`
     @media (max-width: 768px) {
-        width: 80% !important;
+        width: 95% !important;
     }
 `;
 
@@ -304,6 +366,14 @@ const ActionButton = styled(Button)`
     }
 `;
 
+const MoreActionButtonStyled = styled(MoreActionButton)`
+
+    @media (max-width: 480px) { // For mobile phones
+        width: 100%;
+        margin: 0 auto;
+    }
+`;
+
 const PostCardStyle = {
     width: "50%",
     margin: "0 auto",
@@ -316,17 +386,5 @@ const PostCardStyle = {
 
 const CardBorderStyle = {
     borderColor: themes.dark.colors.cardBorder,
-}
-
-// eslint-disable-next-line
-const DeleteButtonStyle: React.CSSProperties = {
-    backgroundColor: themes.dark.colors.danger,
-    border: themes.dark.colors.danger,
-    width: '100%'
-}
-
-const EditButtonStyle: React.CSSProperties = {
-    backgroundColor: themes.dark.colors.submission,
-    border: themes.dark.colors.danger,
-    width: '150px',
+    
 }
