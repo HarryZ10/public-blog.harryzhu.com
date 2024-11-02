@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from "styled-components";
 import { toast } from "react-hot-toast";
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { Button } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, DollarOutlined } from "@ant-design/icons";
 import CreatePostForm from '../components/feed/CreatePostForm';
 import NavBar from '../components/layout/NavBar';
 import PostCard from '../components/feed/post/PostCard';
 import ActionPlus from '../components/layout/ActionPlus';
+import SalaryChart from '../components/SalaryChart';
 
 import { Post } from '../interfaces/post';
 import { usePosts } from '../contexts/PostsContext';
@@ -33,6 +34,12 @@ const FeedPage: React.FC<FeedProps> = ({ isProfileMode }) => {
     }
 
     const [postId, setPostId] = useState<string | undefined>('');
+    const [showSalaryChart, setShowSalaryChart] = useState<boolean>(false);
+    const currentUserPosts = useMemo(() => {
+        if (!user) return [];
+        return posts.filter(post => post.user_id === user?.userId);
+    }, [posts, user]);
+
     const [formPostData, setFormPostData] = useState<Post>({
         id: '',
         user_id: '',
@@ -137,7 +144,7 @@ const FeedPage: React.FC<FeedProps> = ({ isProfileMode }) => {
         <div>
             <NavBar />
 
-            {isProfileMode && (
+            {isProfileMode && user && (
                 <PageTitle>
                     {username
                     ? `${username.toUpperCase()}'s Stuff`
@@ -145,13 +152,34 @@ const FeedPage: React.FC<FeedProps> = ({ isProfileMode }) => {
                 </PageTitle>
             )}
 
-            { !isProfileMode && (
+            {!isProfileMode && user && (
                 <>
                     <div style={CreatePostStyle}>
-                        <Button className="mt-0" onClick={handleFormShow} icon={<PlusOutlined />}>
+                        <StyledButton
+                            onClick={handleFormShow}
+                            icon={<PlusOutlined />}
+                        >
                             Create Post
-                        </Button>
+                        </StyledButton>
+
+                        {currentUserPosts.length > 0 && (
+                            <>
+                                <StyledButton
+                                    onClick={() => setShowSalaryChart(!showSalaryChart)}
+                                    icon={<DollarOutlined />}
+                                >
+                                    {showSalaryChart ? 'Hide Salary Analysis' : 'Show Salary Analysis'}
+                                </StyledButton>
+                            </>
+                        )}
                     </div>
+
+                    {currentUserPosts.length > 0 && (
+                        <SalaryChart
+                            posts={currentUserPosts}
+                            isVisible={showSalaryChart}
+                        />
+                    )}
                 </>
             )}
 
@@ -200,5 +228,9 @@ const CreatePostStyle = {
     display: 'flex',
     justifyContent: 'center',
 };
+
+const StyledButton = styled(Button)`
+    margin: 5px;
+`;
 
 export default FeedPage;

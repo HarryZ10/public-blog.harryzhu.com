@@ -130,8 +130,6 @@ const PostCard: React.FC<PCInfo> = ({ post_id, post_text, post_date, user_id, ad
     };
 
     const handleNewComments = (commentData: any, id: string, date: string) => {
-        const newComment = { ...commentData, id};
-
         // Soft reload
         setComments((prevComments) => [
             ...prevComments.filter((comment) => comment.id !== id),
@@ -351,18 +349,6 @@ const fetchUsername = async (user_id: string): Promise<string> => {
 const StyledCard = styled(Card)`
     @media (max-width: 768px) {
         width: 95% !important;
-    }
-`;
-
-const ActionButton = styled(Button)`
-    color: ${props => props.theme.dark.colors.postText};
-
-    @media (max-width: 1024px) { // For larger screens
-        width: 150px !important;
-    }
-
-    @media (max-width: 480px) { // For mobile phones
-        width: 100px !important;
     }
 `;
 
